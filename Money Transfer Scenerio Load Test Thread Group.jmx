@@ -1,0 +1,1467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Money Transfer Scenerio Load Test Thread Group">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables Just Like Postman Environment">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="server_name" elementType="Argument">
+            <stringProp name="Argument.name">server_name</stringProp>
+            <stringProp name="Argument.value">mta.newroztech.com</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AUTH_SECRET_KEY" elementType="Argument">
+            <stringProp name="Argument.name">AUTH_SECRET_KEY</stringProp>
+            <stringProp name="Argument.value">e97b4ca15fd2b3086c1e4af98b72d503</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AUTH_SECRET_KEY_SYSTEM" elementType="Argument">
+            <stringProp name="Argument.name">AUTH_SECRET_KEY_SYSTEM</stringProp>
+            <stringProp name="Argument.value">b82439df1c92a7fe504bf23da918e6f1</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="protocol" elementType="Argument">
+            <stringProp name="Argument.name">protocol</stringProp>
+            <stringProp name="Argument.value">https</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+        <stringProp name="HTTPSampler.domain">mta.newroztech.com</stringProp>
+        <stringProp name="HTTPSampler.protocol">https</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+      </ConfigTestElement>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+        <collectionProp name="HeaderManager.headers">
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Content-Type</stringProp>
+            <stringProp name="Header.value">application/json</stringProp>
+          </elementProp>
+          <elementProp name="" elementType="Header">
+            <stringProp name="Header.name">Accept</stringProp>
+            <stringProp name="Header.value">application/json</stringProp>
+          </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="SETUP- Create Users &amp; Add Money" enabled="true">
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">0</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </SetupThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Admin Login">
+          <stringProp name="HTTPSampler.path">/api/user/login</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;email&quot;: &quot;admin@dmoney.com&quot;,&#xd;
+    &quot;password&quot; :&quot;admin123&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Admin Token" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">admin_token</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.token</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">TOKEN_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Admin Login Validation" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">import groovy.json.JsonSlurper
+
+// ── var res = pm.response.json() ──
+def res = new JsonSlurper().parseText(prev.getResponseDataAsString())
+
+// ── var code = pm.response.code ──
+def code = prev.getResponseCode().toInteger()
+
+// ── switch(code) ──
+switch (code) {
+
+    case 200:
+        // pm.test(&quot;Status 200 - Login successful&quot;)
+        log.info(&quot;✅ Status 200 - Login successful&quot;)
+        
+        // pm.expect(res.message).to.equal(&quot;Login successful&quot;)
+        if (res.message != &quot;Login successful&quot;) {
+            log.error(&quot;❌ Message mismatch: &quot; + res.message)
+            prev.setSuccessful(false)
+            prev.setResponseMessage(&quot;Message is not &apos;Login successful&apos;. Got: &quot; + res.message)
+            return
+        }
+        log.info(&quot;✅ Message is &apos;Login successful&apos;&quot;)
+        
+        // pm.expect(res.token).to.be.ok
+        if (res.token == null || res.token == &quot;&quot;) {
+            log.error(&quot;❌ Token does not exist&quot;)
+            prev.setSuccessful(false)
+            prev.setResponseMessage(&quot;Token is missing&quot;)
+            return
+        }
+        log.info(&quot;✅ Token exists&quot;)
+        
+        // pm.expect(res.role).to.equal(&quot;Admin&quot;)
+        if (res.role != &quot;Admin&quot;) {
+            log.error(&quot;❌ Role mismatch: &quot; + res.role)
+            prev.setSuccessful(false)
+            prev.setResponseMessage(&quot;Role is not Admin. Got: &quot; + res.role)
+            return
+        }
+        log.info(&quot;✅ Role is Admin&quot;)
+        
+        // pm.environment.set(&quot;admin_token&quot;, res.token)
+        // Already done by JSON Extractor above
+        // But also save it here for safety
+        vars.put(&quot;admin_token&quot;, res.token)
+        log.info(&quot;✅ Admin token saved&quot;)
+        break
+
+    case 400:
+        log.error(&quot;❌ Status 400 - Bad Request&quot;)
+        prev.setSuccessful(false)
+        prev.setResponseMessage(&quot;400 - Bad Request&quot;)
+        // pm.execution.setNextRequest(null) → In JMeter we stop the thread
+        ctx.getThread().stop()
+        break
+
+    case 401:
+        log.error(&quot;❌ Status 401 - Unauthorized&quot;)
+        if (res.message != &quot;Invalid credentials&quot;) {
+            log.error(&quot;Message: &quot; + res.message)
+        }
+        prev.setSuccessful(false)
+        prev.setResponseMessage(&quot;401 - Invalid credentials&quot;)
+        ctx.getThread().stop()
+        break
+
+    case 404:
+        log.error(&quot;❌ Status 404 - User not found: &quot; + res.message)
+        prev.setSuccessful(false)
+        prev.setResponseMessage(&quot;404 - User not found&quot;)
+        ctx.getThread().stop()
+        break
+
+    case 500:
+        log.error(&quot;❌ Status 500 - Server error: &quot; + res.message)
+        prev.setSuccessful(false)
+        prev.setResponseMessage(&quot;500 - Server error&quot;)
+        ctx.getThread().stop()
+        break
+
+    default:
+        log.error(&quot;❌ Unexpected status code: &quot; + code)
+        prev.setSuccessful(false)
+        prev.setResponseMessage(&quot;Unexpected status code: &quot; + code)
+        ctx.getThread().stop()
+        break
+}</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create Customer">
+          <stringProp name="HTTPSampler.path">/api/user/create</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${customer_name}&quot;,&#xd;
+    &quot;email&quot;: &quot;${customer_email}&quot;,&#xd;
+    &quot;password&quot;: &quot;${customer_password}&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;${customer_phone}&quot;,&#xd;
+    &quot;nid&quot;: &quot;${customer_nid}&quot;,&#xd;
+    &quot;role&quot;: &quot;Customer&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token} </stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate Random Customer Data">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">import com.github.javafaker.Faker
+import java.security.SecureRandom
+
+def faker = new Faker()
+def random = new SecureRandom()
+
+// Random Full Name (truly random like Postman&apos;s $randomFullName)
+def name = faker.name().fullName()
+
+// Random Email (truly random like Postman&apos;s $randomEmail)
+def email = faker.internet().emailAddress()
+
+// Random Password (truly random like Postman&apos;s $randomPassword)
+def password = faker.internet().password(8, 16, true, true, false)
+
+// NID (last 10 digits of timestamp)
+def nid = String.valueOf(System.currentTimeMillis()).takeRight(10)
+
+// Random Phone Number
+def prefixes = [&quot;013&quot;, &quot;014&quot;, &quot;015&quot;, &quot;016&quot;, &quot;017&quot;, &quot;018&quot;, &quot;019&quot;]
+def phone_number = prefixes[random.nextInt(prefixes.size())] + String.valueOf(random.nextInt(90000000) + 10000000)
+
+// Set as JMeter variables
+vars.put(&quot;customer_name&quot;, name)
+vars.put(&quot;customer_email&quot;, email)
+vars.put(&quot;customer_phone&quot;, phone_number)
+vars.put(&quot;customer_nid&quot;, nid)
+vars.put(&quot;customer_password&quot;, password)
+
+// Log for debugging
+log.info(&quot;customer_name: &quot; + name)
+log.info(&quot;customer_email: &quot; + email)
+log.info(&quot;customer_phone: &quot; + phone_number)
+log.info(&quot;customer_nid: &quot; + nid)
+log.info(&quot;customer_password: &quot; + password)</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer ID">
+            <stringProp name="JSONPostProcessor.referenceNames">customer_id</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.id</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">ID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer Name from Response">
+            <stringProp name="JSONPostProcessor.referenceNames">customer_name</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.name</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NAME_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer Email from Response">
+            <stringProp name="JSONPostProcessor.referenceNames">customer_email</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.email</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">EMAIL_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer Phone from Response">
+            <stringProp name="JSONPostProcessor.referenceNames">customer_phone</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.phone_number</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">PHONE_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer NID from Response">
+            <stringProp name="JSONPostProcessor.referenceNames">customer_nid</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.nid</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Validate Customer Creation" enabled="false">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import groovy.json.JsonSlurper
+
+// Parse response
+def response = new JsonSlurper().parse(prev.getResponseDataAsString().getBytes())
+def user = response.user
+
+// Get response code
+def statusCode = prev.getResponseCode()
+
+// ========================
+// TEST 1: Status Code 201
+// ========================
+if (statusCode == &quot;201&quot;) {
+    log.info(&quot;✅ PASS: Customer created - Status 201&quot;)
+} else {
+    log.error(&quot;❌ FAIL: Expected status 201 but got &quot; + statusCode)
+    AssertionResult.setFailure(true)
+    AssertionResult.setFailureMessage(&quot;Expected status 201 but got &quot; + statusCode)
+}
+
+// ================================================
+// TEST 2: Response contains message and user details
+// ================================================
+if (response.containsKey(&quot;user&quot;) &amp;&amp; response.containsKey(&quot;message&quot;)) {
+    log.info(&quot;✅ PASS: Response contains proper message and user details&quot;)
+} else {
+    log.error(&quot;❌ FAIL: Response missing &apos;user&apos; or &apos;message&apos; property&quot;)
+    AssertionResult.setFailure(true)
+    AssertionResult.setFailureMessage(&quot;Response missing &apos;user&apos; or &apos;message&apos; property&quot;)
+}
+
+// ========================
+// TEST 3: Name matches
+// ========================
+def expectedName = vars.get(&quot;customer_name&quot;)
+if (user.name == expectedName) {
+    log.info(&quot;✅ PASS: Name matches - &quot; + user.name)
+} else {
+    log.error(&quot;❌ FAIL: Name mismatch. Expected: &quot; + expectedName + &quot; | Got: &quot; + user.name)
+}
+
+// ========================
+// TEST 4: Email matches
+// ========================
+def expectedEmail = vars.get(&quot;customer_email&quot;)
+if (user.email == expectedEmail) {
+    log.info(&quot;✅ PASS: Email matches - &quot; + user.email)
+} else {
+    log.error(&quot;❌ FAIL: Email mismatch. Expected: &quot; + expectedEmail + &quot; | Got: &quot; + user.email)
+}
+
+// ========================
+// TEST 5: Phone matches
+// ========================
+def expectedPhone = vars.get(&quot;customer_phone&quot;)
+if (user.phone_number == expectedPhone) {
+    log.info(&quot;✅ PASS: Phone matches - &quot; + user.phone_number)
+} else {
+    log.error(&quot;❌ FAIL: Phone mismatch. Expected: &quot; + expectedPhone + &quot; | Got: &quot; + user.phone_number)
+}
+
+// ========================
+// TEST 6: NID matches
+// ========================
+def expectedNid = vars.get(&quot;customer_nid&quot;)
+if (user.nid == expectedNid) {
+    log.info(&quot;✅ PASS: NID matches - &quot; + user.nid)
+} else {
+    log.error(&quot;❌ FAIL: NID mismatch. Expected: &quot; + expectedNid + &quot; | Got: &quot; + user.nid)
+}
+
+// ========================
+// Store customer_id for next requests
+// ========================
+vars.put(&quot;customer_id&quot;, String.valueOf(user.id))
+log.info(&quot;📌 customer_id saved: &quot; + user.id)</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create Customer 2" enabled="true">
+          <stringProp name="HTTPSampler.path">/api/user/create</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${customer2_name}&quot;,&#xd;
+    &quot;email&quot;: &quot;${customer2_email}&quot;,&#xd;
+    &quot;password&quot;: &quot;${customer2_password}&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;${customer2_phone}&quot;,&#xd;
+    &quot;nid&quot;: &quot;${customer2_nid}&quot;,&#xd;
+    &quot;role&quot;: &quot;Customer&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate Random Customer 2 Data" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import com.github.javafaker.Faker
+import java.security.SecureRandom
+
+def faker = new Faker()
+def random = new SecureRandom()
+
+// Random Full Name (truly random like Postman&apos;s $randomFullName)
+def name = faker.name().fullName()
+
+// Random Email (truly random like Postman&apos;s $randomEmail)
+def email = faker.internet().emailAddress()
+
+// Random Password (truly random like Postman&apos;s $randomPassword)
+def password = faker.internet().password(8, 16, true, true, false)
+
+// NID (last 10 digits of timestamp)
+def nid = String.valueOf(System.currentTimeMillis()).takeRight(10)
+
+// Random Phone Number
+def prefixes = [&quot;013&quot;, &quot;014&quot;, &quot;015&quot;, &quot;016&quot;, &quot;017&quot;, &quot;018&quot;, &quot;019&quot;]
+def phone_number = prefixes[random.nextInt(prefixes.size())] + String.valueOf(random.nextInt(90000000) + 10000000)
+
+// Set as JMeter variables (customer2_ prefix)
+vars.put(&quot;customer2_name&quot;, name)
+vars.put(&quot;customer2_email&quot;, email)
+vars.put(&quot;customer2_phone&quot;, phone_number)
+vars.put(&quot;customer2_nid&quot;, nid)
+vars.put(&quot;customer2_password&quot;, password)
+
+// Log for debugging
+log.info(&quot;customer2_name: &quot; + name)
+log.info(&quot;customer2_email: &quot; + email)
+log.info(&quot;customer2_phone: &quot; + phone_number)
+log.info(&quot;customer2_nid: &quot; + nid)
+log.info(&quot;customer2_password: &quot; + password)</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token} </stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer 2 ID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">customer2_id</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.id</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">ID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer 2 Name" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">customer2_name</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.name</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NAME_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer 2 Email" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">customer2_email</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.email</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">EMAIL_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer 2 Phone" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">customer2_phone</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.phone_number</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">PHONE_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer 2 NID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">customer2_nid</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.nid</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug -Check All Variables" enabled="false">
+          <boolProp name="displayJMeterProperties">false</boolProp>
+          <boolProp name="displayJMeterVariables">true</boolProp>
+          <boolProp name="displaySystemProperties">false</boolProp>
+        </DebugSampler>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create Agent" enabled="true">
+          <stringProp name="HTTPSampler.path">/api/user/create</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${agent_name}&quot;,&#xd;
+    &quot;email&quot;: &quot;${agent_email}&quot;,&#xd;
+    &quot;password&quot;: &quot;${agent_password}&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;${agent_phone}&quot;,&#xd;
+    &quot;nid&quot;: &quot;${agent_nid}&quot;,&#xd;
+    &quot;role&quot;: &quot;Agent&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate Random Agent Data" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import com.github.javafaker.Faker
+import java.security.SecureRandom
+
+def faker = new Faker()
+def random = new SecureRandom()
+
+// Random Full Name
+def name = faker.name().fullName()
+
+// Random Email
+def email = faker.internet().emailAddress()
+
+// Random Strong Password
+def password = faker.internet().password(8, 16, true, true, false)
+
+// Unique NID (last 10 digits of timestamp + random digit for extra safety)
+def nid = String.valueOf(System.currentTimeMillis()).takeRight(9) + random.nextInt(9)
+
+// Bangladesh Mobile Prefix
+def prefixes = [&quot;013&quot;, &quot;014&quot;, &quot;015&quot;, &quot;016&quot;, &quot;017&quot;, &quot;018&quot;, &quot;019&quot;]
+def phone_number = prefixes[random.nextInt(prefixes.size())] + 
+                   String.valueOf(random.nextInt(90000000) + 10000000)
+
+// Optional: Agent Role (if required by API)
+def role = &quot;Agent&quot;
+
+// Set as JMeter variables
+vars.put(&quot;agent_name&quot;, name)
+vars.put(&quot;agent_email&quot;, email)
+vars.put(&quot;agent_phone&quot;, phone_number)
+vars.put(&quot;agent_nid&quot;, nid)
+vars.put(&quot;agent_password&quot;, password)
+vars.put(&quot;agent_role&quot;, role)
+
+// Log for debugging
+log.info(&quot;agent_name: &quot; + name)
+log.info(&quot;agent_email: &quot; + email)
+log.info(&quot;agent_phone: &quot; + phone_number)
+log.info(&quot;agent_nid: &quot; + nid)
+log.info(&quot;agent_password: &quot; + password)
+log.info(&quot;agent_role: &quot; + role)</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Agent ID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">agent_id</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.id</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">ID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Agent Name" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">agent_name</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.name</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NAME_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Agent Email" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">agent_email</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.email</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">EMAIL_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Agent Phone" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">agent_phone</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.phone_number</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">PHONE_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Agent NID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">agent_nid</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.nid</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug -Check All Variables" enabled="false">
+          <boolProp name="displayJMeterProperties">false</boolProp>
+          <boolProp name="displayJMeterVariables">true</boolProp>
+          <boolProp name="displaySystemProperties">false</boolProp>
+        </DebugSampler>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Create Merchant" enabled="true">
+          <stringProp name="HTTPSampler.path">/api/user/create</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;name&quot;: &quot;${merchant_name}&quot;,&#xd;
+    &quot;email&quot;: &quot;${merchant_email}&quot;,&#xd;
+    &quot;password&quot;: &quot;${merchant_password}&quot;,&#xd;
+    &quot;phone_number&quot;: &quot;${merchant_phone}&quot;,&#xd;
+    &quot;nid&quot;: &quot;${merchant_nid}&quot;,&#xd;
+    &quot;role&quot;: &quot;Merchant&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate Random Merchant Data" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import com.github.javafaker.Faker
+import java.security.SecureRandom
+
+def faker = new Faker()
+def random = new SecureRandom()
+
+// Random Full Name
+def name = faker.name().fullName()
+
+// Random Email
+def email = faker.internet().emailAddress()
+
+// Random Strong Password
+def password = faker.internet().password(8, 16, true, true, false)
+
+// Unique NID (last 10 digits of timestamp + random digit for extra safety)
+def nid = String.valueOf(System.currentTimeMillis()).takeRight(9) + random.nextInt(9)
+
+// Bangladesh Mobile Prefix
+def prefixes = [&quot;013&quot;, &quot;014&quot;, &quot;015&quot;, &quot;016&quot;, &quot;017&quot;, &quot;018&quot;, &quot;019&quot;]
+def phone_number = prefixes[random.nextInt(prefixes.size())] + 
+                   String.valueOf(random.nextInt(90000000) + 10000000)
+
+// Optional: Merchant Role (if required by API)
+def role = &quot;Merchant&quot;
+
+// Set as JMeter variables
+vars.put(&quot;merchant_name&quot;, name)
+vars.put(&quot;merchant_email&quot;, email)
+vars.put(&quot;merchant_phone&quot;, phone_number)
+vars.put(&quot;merchant_nid&quot;, nid)
+vars.put(&quot;merchant_password&quot;, password)
+vars.put(&quot;merchant_role&quot;, role)
+
+// Log for debugging
+log.info(&quot;merchant_name: &quot; + name)
+log.info(&quot;merchant_email: &quot; + email)
+log.info(&quot;merchant_phone: &quot; + phone_number)
+log.info(&quot;merchant_nid: &quot; + nid)
+log.info(&quot;merchant_password: &quot; + password)
+log.info(&quot;merchant_role: &quot; + role)</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Merchant ID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">merchant_id</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.id</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">ID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Merchant Name" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">merchant_name</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.name</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NAME_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Merchant Email" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">merchant_email</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.email</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">EMAIL_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Merchant Phone" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">merchant_phone</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.phone_number</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">PHONE_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Merchant NID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">merchant_nid</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.user.nid</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug -Check All Variables" enabled="false">
+          <boolProp name="displayJMeterProperties">false</boolProp>
+          <boolProp name="displayJMeterVariables">true</boolProp>
+          <boolProp name="displaySystemProperties">false</boolProp>
+        </DebugSampler>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="System Virtual Money Creation">
+          <stringProp name="HTTPSampler.path">/api/system/virtual-money/create</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;amount&quot;: 10000000&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY-SYSTEM</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY_SYSTEM}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Deposit System To Agent">
+          <stringProp name="HTTPSampler.path">api/transaction/deposit</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;from_account&quot;: &quot;SYSTEM&quot;,&#xd;
+    &quot;to_account&quot;: &quot;${agent_phone}&quot;,&#xd;
+    &quot;amount&quot;: 5000000&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Deposit System To Customer">
+          <stringProp name="HTTPSampler.path">api/transaction/customer/deposit</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;from_account&quot;: &quot;SYSTEM&quot;,&#xd;
+    &quot;to_account&quot;: &quot;${customer_phone}&quot;,&#xd;
+    &quot;amount&quot;: 5000000&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Save all local data to global(Easily accessible from one thread group to another)">
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="script">def safePut = { key -&gt;
+    def value = vars.get(key)
+    if (value != null) {
+        props.put(key, value)
+        log.info(&quot;  ✅ &quot; + key + &quot; = &quot; + value)
+    } else {
+        log.warn(&quot;  ⚠️ &quot; + key + &quot; is NULL - skipping&quot;)
+    }
+}
+
+// Customer 1
+log.info(&quot;SAVING CUSTOMER 1 DATA:&quot;)
+safePut(&quot;customer_name&quot;)
+safePut(&quot;customer_email&quot;)
+safePut(&quot;customer_password&quot;)
+safePut(&quot;customer_phone&quot;)
+safePut(&quot;customer_nid&quot;)
+safePut(&quot;customer_id&quot;)
+//Customer 2
+log.info(&quot;SAVING CUSTOMER 2 DATA:&quot;)
+safePut(&quot;customer2_name&quot;)
+safePut(&quot;customer2_email&quot;)
+safePut(&quot;customer2_password&quot;)
+safePut(&quot;customer2_phone&quot;)
+safePut(&quot;customer2_nid&quot;)
+safePut(&quot;customer2_id&quot;)
+
+// Agent
+log.info(&quot;SAVING AGENT DATA:&quot;)
+safePut(&quot;agent_name&quot;)
+safePut(&quot;agent_email&quot;)
+safePut(&quot;agent_password&quot;)
+safePut(&quot;agent_phone&quot;)
+safePut(&quot;agent_nid&quot;)
+safePut(&quot;agent_id&quot;)
+
+// Merchant
+log.info(&quot;SAVING MERCHANT DATA:&quot;)
+safePut(&quot;merchant_name&quot;)
+safePut(&quot;merchant_email&quot;)
+safePut(&quot;merchant_password&quot;)
+safePut(&quot;merchant_phone&quot;)
+safePut(&quot;merchant_nid&quot;)
+safePut(&quot;merchant_id&quot;)
+
+// Admin Token
+log.info(&quot;SAVING ADMIN TOKEN:&quot;)
+safePut(&quot;admin_token&quot;)
+
+log.info(&quot;========================================&quot;)
+log.info(&quot;✅ ALL DATA SAVED TO PROPERTIES&quot;)
+log.info(&quot;========================================&quot;)</stringProp>
+          <stringProp name="scriptLanguage">groovy</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Transaction Load Test Thread Group">
+        <intProp name="ThreadGroup.num_threads">50</intProp>
+        <intProp name="ThreadGroup.ramp_time">15</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Read and Load Data from Global to Local">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">def safeLoad = { key -&gt;
+    def value = props.get(key)
+    if (value != null &amp;&amp; value != &quot;null&quot;) {
+        vars.put(key, value)
+        log.info(&quot;  ✅ Loaded: &quot; + key + &quot; = &quot; + value)
+    } else {
+        log.error(&quot;  ❌ MISSING: &quot; + key)
+    }
+}
+
+log.info(&quot;========================================&quot;)
+log.info(&quot;LOADING DATA FROM GLOBAL PROPERTIES:&quot;)
+
+// Customer 1
+log.info(&quot;CUSTOMER 1:&quot;)
+safeLoad(&quot;customer_name&quot;)
+safeLoad(&quot;customer_email&quot;)
+safeLoad(&quot;customer_password&quot;)
+safeLoad(&quot;customer_phone&quot;)
+safeLoad(&quot;customer_nid&quot;)
+safeLoad(&quot;customer_id&quot;)
+
+// Customer 2 
+log.info(&quot;CUSTOMER 2:&quot;)
+safeLoad(&quot;customer2_name&quot;)
+safeLoad(&quot;customer2_email&quot;)
+safeLoad(&quot;customer2_password&quot;)
+safeLoad(&quot;customer2_phone&quot;)
+safeLoad(&quot;customer2_nid&quot;)
+safeLoad(&quot;customer2_id&quot;)
+
+// Agent
+log.info(&quot;AGENT:&quot;)
+safeLoad(&quot;agent_name&quot;)
+safeLoad(&quot;agent_email&quot;)
+safeLoad(&quot;agent_password&quot;)
+safeLoad(&quot;agent_phone&quot;)
+safeLoad(&quot;agent_nid&quot;)
+safeLoad(&quot;agent_id&quot;)
+
+// Merchant
+log.info(&quot;MERCHANT:&quot;)
+safeLoad(&quot;merchant_name&quot;)
+safeLoad(&quot;merchant_email&quot;)
+safeLoad(&quot;merchant_password&quot;)
+safeLoad(&quot;merchant_phone&quot;)
+safeLoad(&quot;merchant_nid&quot;)
+safeLoad(&quot;merchant_id&quot;)
+
+// Admin
+log.info(&quot;ADMIN:&quot;)
+safeLoad(&quot;admin_token&quot;)
+
+log.info(&quot;========================================&quot;)</stringProp>
+        </JSR223PreProcessor>
+        <hashTree/>
+        <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler" enabled="false">
+          <boolProp name="displayJMeterProperties">false</boolProp>
+          <boolProp name="displayJMeterVariables">true</boolProp>
+          <boolProp name="displaySystemProperties">false</boolProp>
+        </DebugSampler>
+        <hashTree/>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Logins(Run Once) Controller"/>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Customer Login">
+            <stringProp name="HTTPSampler.path">/api/user/login</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{&#xd;
+    &quot;email&quot;: &quot;${customer_email}&quot;,&#xd;
+    &quot;password&quot;: &quot;${customer_password}&quot;&#xd;
+}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer Token">
+              <stringProp name="JSONPostProcessor.referenceNames">customer_token</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.token</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">TOKEN_NOT_FOUND</stringProp>
+            </JSONPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Customer 2 Login">
+            <stringProp name="HTTPSampler.path">/api/user/login</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{&#xd;
+    &quot;email&quot;: &quot;${customer2_email}&quot;,&#xd;
+    &quot;password&quot;: &quot;${customer2_password}&quot;&#xd;
+}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Customer 2 Token">
+              <stringProp name="JSONPostProcessor.referenceNames">customer2_token</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.token</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">TOKEN_NOT_FOUND</stringProp>
+            </JSONPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Agent Login" enabled="true">
+            <stringProp name="HTTPSampler.path">/api/user/login</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{&#xd;
+	&quot;email&quot;:&quot;${agent_email}&quot;,&#xd;
+     &quot;password&quot;:&quot;${agent_password}&quot;&#xd;
+}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Agent Token" enabled="true">
+              <stringProp name="JSONPostProcessor.referenceNames">agent_token</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.token</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">TOKEN_NOT_FOUND</stringProp>
+            </JSONPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler" enabled="false">
+            <boolProp name="displayJMeterProperties">false</boolProp>
+            <boolProp name="displayJMeterVariables">true</boolProp>
+            <boolProp name="displaySystemProperties">false</boolProp>
+          </DebugSampler>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Deposit Agent To Customer 2">
+          <stringProp name="HTTPSampler.path">/api/transaction/customer/deposit</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;from_account&quot;: &quot;${agent_phone}&quot;,&#xd;
+    &quot;to_account&quot;: &quot;${customer2_phone}&quot;,&#xd;
+    &quot;amount&quot;: 10000&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${agent_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Transaction ID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">deposit_txn_id</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.trnxId</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">TRANSACTION_ID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Money Customer 2 To Customer 1" enabled="true">
+          <stringProp name="HTTPSampler.path">/api/transaction/sendmoney</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;from_account&quot;: &quot;${customer_phone}&quot;,&#xd;
+    &quot;to_account&quot;: &quot;${customer2_phone}&quot;,&#xd;
+    &quot;amount&quot;: 1&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${customer2_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Transaction ID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">sendmoney_txn_id</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.trnxId</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Payment Customer 1 to Merchant" enabled="true">
+          <stringProp name="HTTPSampler.path">/api/transaction/payment</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;from_account&quot;: &quot;${customer_phone}&quot;,&#xd;
+    &quot;to_account&quot;: &quot;${merchant_phone}&quot;,&#xd;
+    &quot;amount&quot;: 1&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${customer_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Transaction ID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">payment_txn_id</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.trnxId</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">TRANSACTION_ID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Withdraw Customer 2 To Agent" enabled="true">
+          <stringProp name="HTTPSampler.path">/api/transaction/withdraw</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;from_account&quot;: &quot;${customer2_phone}&quot;,&#xd;
+    &quot;to_account&quot;: &quot;${agent_phone}&quot;,&#xd;
+    &quot;amount&quot;: 1&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${customer2_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Transaction ID" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">withdraw_txn_id</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.trnxId</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">TRANSACTION_ID_NOT_FOUND</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Check Customer 1 Balance" enabled="true">
+          <stringProp name="HTTPSampler.path">/api/transaction/balance/${customer_phone}</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Transaction History" enabled="true">
+          <stringProp name="HTTPSampler.path">/api/transaction/history/${customer_phone}</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="limit" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">10</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">limit</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search Transaction By Transaction ID">
+          <stringProp name="HTTPSampler.path">/api/transaction/${withdraw_txn_id}</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${admin_token}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">AUTH-SECRET-KEY</stringProp>
+                <stringProp name="Header.value">${AUTH_SECRET_KEY}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
