@@ -78,11 +78,47 @@ Logins are executed **only once per thread** using a Run Once Controller:
 | ✅ Pass Rate          | **99.8%**      |
 | ❌ Fail Rate          | **0.2%**       |
 
+Note that : The API demonstrated **excellent stability** under load with a **99.8% success rate** across 50 concurrent users performing multiple transaction types simultaneously.
+
 ## How to View the Load Test Report
 
-###  Option 1: Download ZIP  (Recommended)
+###  Option 1: Download ZIP  
 
 1. Download the **[html_report.zip]** file from this repository
 2. Extract the ZIP file
 3. Open `index.html` in your browser
 4. Full graphical dashboard with all charts and graphs will load
+  
+How to Run the Test Yourself
+
+**Prerequisites**
+
+Apache JMeter (v5.x+)
+Java JDK (v8+)
+Run via JMeter GUI
+Open Apache JMeter
+Go to File → Open
+Select the .jmx file
+Click ▶️ Start button
+Run via Command Line (Recommended for Load Testing)
+Bash
+
+jmeter -n -t "Money Transfer Scenerio Load Test Thread Group .jmx" -l results.csv -e -o html_report/
+
+📌 Key Features Tested
+✅ User authentication (Admin, Customer, Agent)
+✅ User creation (Customer, Agent, Merchant)
+✅ Virtual money creation with secret key
+✅ Deposit transactions (System → User, Agent → Customer)
+✅ Peer-to-peer money transfer (Customer → Customer)
+✅ Payment processing (Customer → Merchant)
+✅ Cash withdrawal (Customer → Agent)
+✅ Balance inquiry
+✅ Transaction history retrieval
+✅ Transaction search by ID
+
+👤 Author
+[Mahmuda Ferdus]
+
+GitHub: @MahmudaFerdus/
+
