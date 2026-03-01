@@ -100,9 +100,9 @@ Open Apache JMeter
 Go to File → Open
 Select the .jmx file
 Click ▶️ Start button
-Run via Command Line (Recommended for Load Testing)
-Bash
 
+For generating report: Run via Command Line (Recommended for Load Testing)
+Bash
 jmeter -n -t "Money Transfer Scenerio Load Test Thread Group .jmx" -l results.csv -e -o html_report/
 
 📌 Key Features Tested
